@@ -18,8 +18,8 @@ def main():
     parser.add_argument("--verbose", action="store_true", default=False)
     parser.add_argument(
         "--days",
-        nargs=1,
         action="store",
+        type=int,
         default=30,
         help="How far back to look for activity",
         metavar="DAYS",
@@ -111,7 +111,7 @@ def main():
                 additions += int(file_additions)
                 deletions += int(file_deletions)
 
-        print(f"{additions:+8d} {-deletions:8d} {dirname}")
+        print(f"{additions:+8d} {-deletions:-8d} {dirname}")
 
 
 if __name__ == "__main__":
