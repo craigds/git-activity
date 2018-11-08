@@ -101,15 +101,19 @@ def main():
         for remote_branch in remote_branches:
             stat = (
                 subprocess.check_output(
-                    ["git", "diff", "--numstat", f"..{remote_branch}", dirname]
+                    ["git", "diff", "--numstat", f"...{remote_branch}", dirname]
                 )
                 .strip()
                 .decode("utf-8")
             )
             for line in stat.splitlines():
                 (file_additions, file_deletions) = line.split()[:2]
-                additions += int(file_additions)
-                deletions += int(file_deletions)
+                try:
+                    additions += int(file_additions)
+                    deletions += int(file_deletions)
+                except ValueError:
+                    # binary files don't have integer line counts
+                    pass
 
         print(f"{additions:+8d} {-deletions:-8d} {dirname}")
 
