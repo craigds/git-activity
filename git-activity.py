@@ -24,6 +24,13 @@ def main():
         help="How far back to look for activity",
         metavar="DAYS",
     )
+    parser.add_argument(
+        '--remote',
+        type=str,
+        default=None,
+        help="Which remote? Defaults to remote for current branch",
+        metavar='REMOTE',
+    )
     parser.add_argument("files", nargs="+", metavar="FILE")
 
     args = parser.parse_args()
@@ -43,15 +50,20 @@ def main():
         print(f"Current branch: {branch_name}")
 
     # Get remote name
-    try:
-        remote_name = (
-            subprocess.check_output(["git", "config", f"branch.{branch_name}.remote"])
-            .strip()
-            .decode("utf-8")
-        )
-    except subprocess.CalledProcessError:
-        die("Couldn't detect a remote for the current branch.")
-        sys.exit(1)
+    if args.remote:
+        remote_name = args.remote
+    else:
+        try:
+            remote_name = (
+                subprocess.check_output(
+                    ["git", "config", f"branch.{branch_name}.remote"]
+                )
+                .strip()
+                .decode("utf-8")
+            )
+        except subprocess.CalledProcessError:
+            die("Couldn't detect a remote for the current branch.")
+            sys.exit(1)
 
     if args.verbose:
         print(f"Remote name: {remote_name}")
