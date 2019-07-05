@@ -26,6 +26,20 @@ def main():
         metavar="DAYS",
     )
     parser.add_argument(
+        "--max-changes",
+        action="store",
+        type=int,
+        default=None,
+        help="Only show files/dirs with less than this number of changed lines (sums additions & deletions)",
+        metavar="CHANGES",
+    )
+    parser.add_argument(
+        "--only-filenames",
+        action="store_true",
+        default=False,
+        help="Only show filenames (only really useful with `--max-changes=N`)",
+    )
+    parser.add_argument(
         '--remote',
         type=str,
         default=None,
@@ -129,10 +143,17 @@ def main():
                 pass
 
     for path in args.files:
-        # prefix negative number with a minus, even if it's zero.
-        # (f'{-deletions[path]:-8d}' doesn't add the minus if it's zero)
-        deletions_str = f'-{deletions[path]}'
-        print(f"{additions[path]:+8d} {deletions_str:>8s} {path}")
+        if args.max_changes is not None:
+            total_changes = deletions[path] + additions[path]
+            if total_changes > args.max_changes:
+                continue
+        if args.only_filenames:
+            print(path)
+        else:
+            # prefix negative number with a minus, even if it's zero.
+            # (f'{-deletions[path]:-8d}' doesn't add the minus if it's zero)
+            deletions_str = f'-{deletions[path]}'
+            print(f"{additions[path]:+8d} {deletions_str:>8s} {path}")
 
 
 if __name__ == "__main__":
