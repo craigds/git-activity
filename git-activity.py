@@ -129,7 +129,10 @@ def main():
                 pass
 
     for path in args.files:
-        print(f"{additions[path]:+8d} {-deletions[path]:-8d} {path}")
+        # prefix negative number with a minus, even if it's zero.
+        # (f'{-deletions[path]:-8d}' doesn't add the minus if it's zero)
+        deletions_str = f'-{deletions[path]}'
+        print(f"{additions[path]:+8d} {deletions_str:>8s} {path}")
 
 
 if __name__ == "__main__":
