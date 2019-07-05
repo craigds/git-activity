@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+from collections import defaultdict
 import datetime
 import os
 import subprocess
@@ -107,27 +108,28 @@ def main():
         print(
             f"Diffing {len(remote_branches)} remote branches modified in the last {args.days} days"
         )
-    for dirname in args.files:
-        additions = 0
-        deletions = 0
-        for remote_branch in remote_branches:
-            stat = (
-                subprocess.check_output(
-                    ["git", "diff", "--numstat", f"...{remote_branch}", dirname]
-                )
-                .strip()
-                .decode("utf-8")
-            )
-            for line in stat.splitlines():
-                (file_additions, file_deletions) = line.split()[:2]
-                try:
-                    additions += int(file_additions)
-                    deletions += int(file_deletions)
-                except ValueError:
-                    # binary files don't have integer line counts
-                    pass
 
-        print(f"{additions:+8d} {-deletions:-8d} {dirname}")
+    additions = defaultdict(int)
+    deletions = defaultdict(int)
+    for remote_branch in remote_branches:
+        stat = (
+            subprocess.check_output(
+                ["git", "diff", "--numstat", f"...{remote_branch}", *args.files]
+            )
+            .strip()
+            .decode("utf-8")
+        )
+        for line in stat.splitlines():
+            (file_additions, file_deletions, path) = line.strip().split()
+            try:
+                additions[path] += int(file_additions)
+                deletions[path] += int(file_deletions)
+            except ValueError:
+                # binary files don't have integer line counts
+                pass
+
+    for path in args.files:
+        print(f"{additions[path]:+8d} {-deletions[path]:-8d} {path}")
 
 
 if __name__ == "__main__":
